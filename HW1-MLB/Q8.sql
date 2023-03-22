@@ -23,7 +23,7 @@ FROM (  /* 每位投手的統計資料 */
         AVG(SUBSTRING(PC_ST, POSITION('-' IN PC_ST) + 1)) AS 2020_ST
         FROM pitchers
         INNER JOIN games ON pitchers.Game = games.Game
-        WHERE YEAR(Date) = 2020
+        WHERE YEAR(Date) = 2020 AND IP > 0
         GROUP BY Pitcher_Id
     ) AS p0 ON p0.Pitcher_Id = p2.Pitcher_Id
     INNER JOIN (
@@ -32,7 +32,7 @@ FROM (  /* 每位投手的統計資料 */
         AVG(SUBSTRING(PC_ST, POSITION('-' IN PC_ST) + 1)) AS 2021_ST
         FROM pitchers
         INNER JOIN games ON pitchers.Game = games.Game
-        WHERE YEAR(Date) = 2021
+        WHERE YEAR(Date) = 2021 AND IP > 0
         GROUP BY Pitcher_Id
     ) AS p1 ON p1.Pitcher_Id = p2.Pitcher_Id
     GROUP BY p2.Pitcher_Id
@@ -40,19 +40,10 @@ FROM (  /* 每位投手的統計資料 */
 GROUP BY Pitcher;  /* 最後輸出 Changed/Unchanged 兩個 row */
 
 /*
-助教答案：
 +-----------+-----+--------------+--------------+-----------------+-----------------+
 | Pitcher   | cnt | 2020_avg_K/9 | 2021_avg_K/9 | 2020_PC-ST      | 2021_PC-ST      |
 +-----------+-----+--------------+--------------+-----------------+-----------------+
 | Changed   | 133 |      12.8063 |      12.1091 | 40.8364-25.6936 | 42.0674-26.9533 |
 | Unchanged | 221 |      11.9625 |      11.8112 | 53.1891-33.6151 | 52.7626-33.9636 |
-+-----------+-----+--------------+--------------+-----------------+-----------------+
-
-目前輸出：
-+-----------+-----+--------------+--------------+-----------------+-----------------+
-| Pitcher   | cnt | 2020_avg_K/9 | 2021_avg_K/9 | 2020_PC-ST      | 2021_PC-ST      |
-+-----------+-----+--------------+--------------+-----------------+-----------------+
-| Changed   | 133 |      12.8063 |      12.1091 | 40.8138-25.6677 | 42.0341-26.9229 |
-| Unchanged | 221 |      11.9625 |      11.8112 | 53.0557-33.5250 | 52.6564-33.8840 |
 +-----------+-----+--------------+--------------+-----------------+-----------------+
 */
