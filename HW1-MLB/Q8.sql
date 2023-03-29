@@ -7,9 +7,9 @@ FROM (  /* 每位投手的統計資料 */
     SELECT 2020_K, 2020_PC, 2020_ST, 2021_K, 2021_PC, 2021_ST, Pitcher
     FROM (  /* 符合條件的投手 */
         SELECT Pitcher_Id,
-        SUM(CASE WHEN YEAR(Date) = 2020 THEN IP END) AS ip_2020,
-        SUM(CASE WHEN YEAR(Date) = 2021 THEN IP END) AS ip_2021,
-        CASE WHEN COUNT(DISTINCT Team) = 1 THEN 'Unchanged' ELSE 'Changed' END AS Pitcher
+        SUM(IF(YEAR(Date) = 2020, IP, NULL)) AS ip_2020,
+        SUM(IF(YEAR(Date) = 2021, IP, NULL)) AS ip_2021,
+        IF(COUNT(DISTINCT Team) = 1, 'Unchanged', 'Changed') AS Pitcher
         FROM pitchers
         INNER JOIN games ON pitchers.Game = games.Game
         WHERE YEAR(Date) = 2020 OR YEAR(Date) = 2021
@@ -18,12 +18,12 @@ FROM (  /* 每位投手的統計資料 */
     ) AS p1
     INNER JOIN (  /* 兩個年份分別取值到不同 column */
         SELECT Pitcher_Id,
-        AVG(CASE WHEN YEAR(Date) = 2020 THEN K / IP END) AS 2020_K,
-        AVG(CASE WHEN YEAR(Date) = 2021 THEN K / IP END) AS 2021_K,
-        AVG(CASE WHEN YEAR(Date) = 2020 THEN SUBSTRING(PC_ST, 1, POSITION('-' IN PC_ST)) END) AS 2020_PC,
-        AVG(CASE WHEN YEAR(Date) = 2021 THEN SUBSTRING(PC_ST, 1, POSITION('-' IN PC_ST)) END) AS 2021_PC,
-        AVG(CASE WHEN YEAR(Date) = 2020 THEN SUBSTRING(PC_ST, POSITION('-' IN PC_ST) + 1) END) AS 2020_ST,
-        AVG(CASE WHEN YEAR(Date) = 2021 THEN SUBSTRING(PC_ST, POSITION('-' IN PC_ST) + 1) END) AS 2021_ST
+        AVG(IF(YEAR(Date) = 2020, K / IP, NULL)) AS 2020_K,
+        AVG(IF(YEAR(Date) = 2021, K / IP, NULL)) AS 2021_K,
+        AVG(IF(YEAR(Date) = 2020, SUBSTRING(PC_ST, 1, POSITION('-' IN PC_ST)), NULL)) AS 2020_PC,
+        AVG(IF(YEAR(Date) = 2021, SUBSTRING(PC_ST, 1, POSITION('-' IN PC_ST)), NULL)) AS 2021_PC,
+        AVG(IF(YEAR(Date) = 2020, SUBSTRING(PC_ST, POSITION('-' IN PC_ST) + 1), NULL)) AS 2020_ST,
+        AVG(IF(YEAR(Date) = 2021, SUBSTRING(PC_ST, POSITION('-' IN PC_ST) + 1), NULL)) AS 2021_ST
         FROM pitchers
         INNER JOIN games ON pitchers.Game = games.Game
         WHERE IP > 0
