@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd "$(basename "$0")" || exit 1
+cd "$(dirname "$0")" || exit 1
 
 cat schema.sql | mysql db_hw1
 

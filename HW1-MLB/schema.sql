@@ -1,3 +1,5 @@
+SET FOREIGN_KEY_CHECKS=0;
+
 DROP TABLE IF EXISTS games;
 CREATE TABLE games (
     Game int NOT NULL,
@@ -9,10 +11,10 @@ CREATE TABLE games (
     PRIMARY KEY (Game)
 );
 
-
 DROP TABLE IF EXISTS inning;
 CREATE TABLE inning (
-    Game int NOT NULL REFERENCES games(Game),
+    Game int NOT NULL,
+    FOREIGN KEY (Game) REFERENCES games(Game),
     Inning char(3) NOT NULL,
     Runs tinyint,
     Hits tinyint,
@@ -20,10 +22,10 @@ CREATE TABLE inning (
     PRIMARY KEY (Game, Inning)
 );
 
-
 DROP TABLE IF EXISTS hitters;
 CREATE TABLE hitters (
-    Game int NOT NULL REFERENCES games(Game),
+    Game int NOT NULL,
+    FOREIGN KEY (Game) REFERENCES games(Game),
     Team char(3) NOT NULL,
     AB tinyint,
     R tinyint,
@@ -34,13 +36,13 @@ CREATE TABLE hitters (
     num_P tinyint,
     Position varchar(20),
     Hitter_Id mediumint NOT NULL,
-    PRIMARY KEY (Game, Hitter_Id)
+    PRIMARY KEY (Hitter_Id)
 );
-
 
 DROP TABLE IF EXISTS pitchers;
 CREATE TABLE pitchers (
-    Game int NOT NULL REFERENCES games(Game),
+    Game int NOT NULL,
+    FOREIGN KEY (Game) REFERENCES games(Game),
     Team char(3) NOT NULL,
     IP float,
     H tinyint,
@@ -54,11 +56,11 @@ CREATE TABLE pitchers (
     PRIMARY KEY (Game, Pitcher_Id)
 );
 
-
 DROP TABLE IF EXISTS pitches;
 CREATE TABLE pitches (
     Pitch_Id mediumint NOT NULL,
-    Game int NOT NULL REFERENCES games(Game),
+    Game int NOT NULL,
+    FOREIGN KEY (Game) REFERENCES games(Game),
     EventId smallint NOT NULL,
     Num tinyint NOT NULL,
     Inning char(3),
@@ -69,10 +71,11 @@ CREATE TABLE pitches (
     PRIMARY KEY (Pitch_Id)
 );
 
-
 DROP TABLE IF EXISTS players;
 CREATE TABLE players (
     Id mediumint NOT NULL,
     Name varchar(20),
     PRIMARY KEY (Id)
 );
+
+SET FOREIGN_KEY_CHECKS=1;
