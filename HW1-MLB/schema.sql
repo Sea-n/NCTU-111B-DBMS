@@ -36,7 +36,7 @@ CREATE TABLE hitters (
     num_P tinyint,
     Position varchar(20),
     Hitter_Id mediumint NOT NULL,
-    PRIMARY KEY (Hitter_Id)
+    PRIMARY KEY (Game, Hitter_Id)
 );
 
 DROP TABLE IF EXISTS pitchers;

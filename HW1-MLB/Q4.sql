@@ -1,11 +1,12 @@
+/* WIP */
 SELECT Name AS Hitter,
-ROUND(AVG(num_P / (BB+K+AB)), 4) AS `avg_P/PA`,
-AVG(AB) AS avg_AB, AVG(BB) AS avg_BB, AVG(K) AS avg_K,
-SUM(BB+K+AB) AS tol_PA
+       ROUND(AVG(num_P / (BB+K+AB)), 4) AS `avg_P/PA`,
+       AVG(AB) AS avg_AB, AVG(BB) AS avg_BB, AVG(K) AS avg_K,
+       SUM(BB+K+AB) AS tol_PA
 FROM hitters
 INNER JOIN players ON Hitter_Id = players.Id
 WHERE AB > 0
-GROUP BY Hitter_Id
+GROUP BY Hitter_Id, Name
 HAVING tol_PA >= 20
 ORDER BY `avg_P/PA` DESC
 LIMIT 3;

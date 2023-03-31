@@ -1,4 +1,4 @@
-SELECT COUNT(*) AS cnt
+SELECT COUNT(1) AS cnt
 FROM games
 WHERE ABS(away_score - home_score) >= 10;
 

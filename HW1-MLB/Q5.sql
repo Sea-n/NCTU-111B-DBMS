@@ -1,10 +1,11 @@
-SELECT Team, The_month, TIME_FORMAT(MIN(diff), '%H:%i') AS time_interval
+SELECT Team, The_month,
+       TIME_FORMAT(MIN(diff), '%H:%i') AS time_interval
 FROM (
     SELECT Team, The_month,
-    TIMEDIFF(Date, LAG(Date, 1) OVER (PARTITION BY Team ORDER BY Date)) AS diff
+           TIMEDIFF(Date, LAG(Date, 1) OVER (PARTITION BY Team ORDER BY Date)) AS diff
     FROM (
         SELECT SUBSTR(Date, 1, 7) AS The_month,
-        COUNT(*) AS cnt
+               COUNT(1) AS cnt
         FROM games
         GROUP BY The_month
         ORDER BY cnt DESC

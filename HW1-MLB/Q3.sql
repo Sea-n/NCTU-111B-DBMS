@@ -1,10 +1,13 @@
 SELECT Pitcher_Id,
-Name AS Pitcher,
-ROUND(SUM(IP), 1) AS tol_innings
+       Name AS Pitcher,
+       ROUND(SUM(IP), 1) AS tol_innings
 FROM pitchers
 INNER JOIN players ON Pitcher_Id = Id
-INNER JOIN games ON pitchers.Game = games.Game AND YEAR(Date) = 2021
-GROUP BY Pitcher_Id
+WHERE EXISTS (
+    SELECT 1 FROM games
+    WHERE pitchers.Game = games.Game AND YEAR(Date) = 2021
+)
+GROUP BY Pitcher_Id, Pitcher
 ORDER BY tol_innings DESC
 LIMIT 3;
 

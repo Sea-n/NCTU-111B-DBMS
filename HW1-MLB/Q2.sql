@@ -1,16 +1,13 @@
-SELECT Game, num_innings
-FROM (
-    SELECT Game, ROUND(COUNT(*) / 2) AS num_innings
+SELECT Game, CEILING(COUNT(1) / 2) AS num_innings
+FROM inning
+GROUP BY Game
+HAVING num_innings = CEILING((
+    SELECT COUNT(1) AS cnt
     FROM inning
     GROUP BY Game
-) t0
-WHERE num_innings = (
-    SELECT ROUND(COUNT(*) / 2) AS cnt
-    FROM inning
-    GROUP BY Game
-    ORDER BY CNT DESC
+    ORDER BY cnt DESC
     LIMIT 1
-)
+) / 2)
 ORDER BY Game;
 
 /*
