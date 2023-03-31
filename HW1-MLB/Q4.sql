@@ -1,4 +1,3 @@
-/* WIP */
 SELECT Name AS Hitter,
        ROUND(AVG(num_P / (BB+K+AB)), 4) AS `avg_P/PA`,
        AVG(AB) AS avg_AB, AVG(BB) AS avg_BB, AVG(K) AS avg_K,

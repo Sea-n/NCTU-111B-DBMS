@@ -12,7 +12,7 @@ FROM (  /* 過濾常駐百場投手 */
     INNER JOIN (  /* 先發投手 */
         SELECT DISTINCT Game, Pitcher
         FROM pitches
-        WHERE (Inning = 'T1' OR Inning = 'B1') AND Num = 1 /* ? */
+        WHERE Inning IN ('T1', 'B1') AND Num = 1 /* ? */
     ) t2 ON t1.Game = t2.Game AND t1.Pitcher = t2.Pitcher
     GROUP BY t1.Pitcher
     HAVING COUNT(t1.Game) >= 100
@@ -28,7 +28,7 @@ INNER JOIN (  /* 依投手抓取常駐賽局 */
     INNER JOIN (  /* 先發投手 */
         SELECT DISTINCT Game, Pitcher, Inning
         FROM pitches
-        WHERE (Inning = 'T1' OR Inning = 'B1') AND Num = 1 /* ? */
+        WHERE Inning IN ('T1', 'B1') AND Num = 1 /* ? */
     ) t4 ON t3.Game = t4.Game AND t3.Pitcher = t4.Pitcher
 ) t5 ON t0.Pitcher = t5.Pitcher
 INNER JOIN games ON t5.Game = games.Game  /* 加入主客隊資訊 */

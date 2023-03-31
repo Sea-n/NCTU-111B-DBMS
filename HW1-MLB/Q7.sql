@@ -1,10 +1,10 @@
 SELECT t1.Team, Hitter, avg_hit_rate, tol_hit, win_rate
 FROM (
     SELECT Team, SUM(win) / SUM(ttl) AS win_rate FROM (
-        SELECT home AS Team, NULL AS win, COUNT(*) AS ttl FROM games WHERE YEAR(Date) = 2021 GROUP BY home
-        UNION ALL SELECT away, NULL, COUNT(*) FROM games WHERE YEAR(Date) = 2021 GROUP BY away
-        UNION ALL SELECT away, COUNT(*), NULL FROM games WHERE YEAR(Date) = 2021 AND away_score > home_score GROUP BY away
-        UNION ALL SELECT home, COUNT(*), NULL FROM games WHERE YEAR(Date) = 2021 AND away_score < home_score GROUP BY home
+        SELECT home AS Team, 0 AS win, COUNT(1) AS ttl FROM games WHERE YEAR(Date) = 2021 GROUP BY home
+        UNION ALL SELECT away, 0, COUNT(1) FROM games WHERE YEAR(Date) = 2021 GROUP BY away
+        UNION ALL SELECT away, COUNT(1), 0 FROM games WHERE YEAR(Date) = 2021 AND away_score > home_score GROUP BY away
+        UNION ALL SELECT home, COUNT(1), 0 FROM games WHERE YEAR(Date) = 2021 AND away_score < home_score GROUP BY home
     ) t0
     GROUP BY Team
     ORDER BY win_rate DESC

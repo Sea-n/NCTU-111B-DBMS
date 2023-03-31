@@ -1,5 +1,5 @@
 SELECT ROUND(MIN(hr), 2) AS hit_rate_diff,
-SUM(hit_win = winer) / COUNT(*) AS win_rate
+SUM(hit_win = winer) / COUNT(1) AS win_rate
 FROM (
     SELECT Game,
     Team AS hit_win,
