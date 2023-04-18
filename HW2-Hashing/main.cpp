@@ -1,19 +1,9 @@
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include "utils.h"
 #include <chrono>
-
-#include <sys/resource.h>
+#include "utils.h"
 #include "hash.h"
 
 
-using namespace std;
-
-int main()
-{
+int main() {
     vector<int> key;
     vector<int> value;
     vector<int> query_keys;
@@ -28,23 +18,24 @@ int main()
 
     chrono::steady_clock::time_point start = chrono::steady_clock::now();
     
-    //Build index when index constructor is called
+    // Build index when index constructor is called
     hash_table my_hash_table(1<<1, 2, num_rows, key, value);
     chrono::steady_clock::time_point built_index = chrono::steady_clock::now();
     
-    //Query by key
+    // Query by key
     my_hash_table.key_query(query_keys, "key_query_out1.txt");
     chrono::steady_clock::time_point key_query1 = chrono::steady_clock::now();
 
-    //Remove by key
+    // Remove by key
     my_hash_table.remove_query(query_remove_keys);
     chrono::steady_clock::time_point remove_query = chrono::steady_clock::now();
 
-    //Query by key
+    // Query by key
     my_hash_table.key_query(query_keys, "key_query_out2.txt");
     chrono::steady_clock::time_point key_query2 = chrono::steady_clock::now();
     
-    //Free memory
+    // Free memory
+	get_memory_usage();
     my_hash_table.clear();
     
     auto time_to_build_index = chrono::duration_cast<chrono::microseconds>(built_index - start).count();
