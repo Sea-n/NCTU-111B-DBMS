@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <cassert>
 #include <fstream>
 #include <bitset>
 #include <string>
@@ -7,6 +8,8 @@
 #include <vector>
 #include <cmath>
 #include "utils.h"
+
+#define tail(key, len) (((key)&((1<<(len))-1)) | 1<<(len))
 
 using namespace std;
 
@@ -16,6 +19,8 @@ public:
 	int value;
 	hash_entry *next;  // 以 linked list 結構儲存資料
 	hash_entry(int key, int value);
+
+	~hash_entry();
 };
 
 class hash_bucket {
@@ -26,7 +31,7 @@ public:
 	hash_entry* first;  // 所指向的 entry 位址
 	hash_bucket(int hash_key, int depth);
 
-	void clear();
+	~hash_bucket();
 };
 
 class hash_table {
@@ -34,12 +39,12 @@ public:
 	int table_size;	// 當前 hash index 的數量
 	int bucket_size;   // bucket 可放 entry 最大上限
 	int global_depth;  // 2 進位時目前所數到的值
-	vector<hash_bucket*> bucket_table;  // 所擁有的 bucket
+	vector<hash_bucket*> bucket_table;  // Binary Tree hash suffix -> hash_bucket
 	hash_table(int table_size, int bucket_size, int num_rows, vector<int> key, vector<int> value);
 
-	void extend(hash_bucket *bucket);
+	void extend(int bidx);
 	void half_table();
-	void shrink(hash_bucket *bucket);
+	void shrink(int bidx);
 	void insert(int key, int value);
 	void remove(int key);
 
