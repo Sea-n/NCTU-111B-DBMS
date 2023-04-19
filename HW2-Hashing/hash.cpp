@@ -12,12 +12,12 @@ hash_bucket::hash_bucket(int hash_key, int depth) {
  * Free the memory alocated to this->first.
  */
 void hash_bucket::clear() {
-    printf("clear()\n");
+	printf("clear()\n");
 	free(this->first);
 }
 
 hash_table::hash_table(int table_size, int bucket_size, int num_rows, vector<int> key, vector<int> value) {
-    printf("hash_table(table_size=%d, bucket_size=%d, num_rows=%d, key=%ld, value=%ld)\n", table_size, bucket_size, num_rows, key.size(), value.size());
+	printf("hash_table(table_size=%d, bucket_size=%d, num_rows=%d, key=%ld, value=%ld)\n", table_size, bucket_size, num_rows, key.size(), value.size());
 	for (int i=0; i<num_rows; i++) {
 		printf("i=%d: key=%d, value=%d\n", i, key[i], value[i]);
 	}
@@ -35,7 +35,7 @@ void hash_table::extend(hash_bucket *bucket) {
  * When construct hash_table you can call insert() in the for loop for each key-value pair.
  */
 void hash_table::insert(int key, int value) {
-    printf("int(key=%d, value=%d)\n", key, value);
+	printf("int(key=%d, value=%d)\n", key, value);
 }
 
 /*
@@ -43,7 +43,7 @@ void hash_table::insert(int key, int value) {
  * Check whether the table necessory need the current size of table, or half the size of table.
  */
 void hash_table::half_table() {
-    printf("half_table()\n");
+	printf("half_table()\n");
 }
 
 /*
@@ -64,11 +64,11 @@ void hash_table::remove(int key) {
 }
 
 void hash_table::key_query(vector<int> query_keys, string file_name) {
-    printf("key_query(query_keys=%ld, file_name=%s)\n", query_keys.size(), file_name.c_str());
+	printf("key_query(query_keys=%ld, file_name=%s)\n", query_keys.size(), file_name.c_str());
 }
 
 void hash_table::remove_query(vector<int> query_keys) {
-    printf("remove_query(query_keys=%ld)\n", query_keys.size());
+	printf("remove_query(query_keys=%ld)\n", query_keys.size());
 }
 
 /*
