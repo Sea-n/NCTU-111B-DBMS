@@ -1,3 +1,5 @@
 hw2
+gmon.out
+gprof.txt
 time_used.txt
 key_query_out[12].txt

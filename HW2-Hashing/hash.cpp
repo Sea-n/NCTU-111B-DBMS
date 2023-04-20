@@ -1,7 +1,8 @@
+/* Author: Sean Wei */
 #include "hash.h"
 
 /* Hash Entry */
-hash_entry::hash_entry(int key, int value)
+hash_entry::hash_entry(const int key, const int value)
 : key(key), value(value), next(nullptr) { }
 
 hash_entry::~hash_entry() {
@@ -9,7 +10,7 @@ hash_entry::~hash_entry() {
 }
 
 /* Hash Bucket */
-hash_bucket::hash_bucket(int hash_key, int depth)
+hash_bucket::hash_bucket(const int hash_key, const int depth)
 : local_depth(depth), num_entries(0), hash_key(hash_key), first(nullptr) { }
 
 hash_bucket::~hash_bucket() {
@@ -17,16 +18,16 @@ hash_bucket::~hash_bucket() {
 }
 
 /* Hash Table */
-hash_table::hash_table(int table_size, int bucket_size, int num_rows, vector<int> key, vector<int> value)
+hash_table::hash_table(const int table_size, const int bucket_size, const int num_rows, const vector<int> key, const vector<int> value)
 : table_size(table_size), bucket_size(bucket_size), global_depth(1), bucket_table(1e7, nullptr) {
 	bucket_table[1] = new hash_bucket(0, 0);
 	for (int i=0; i<num_rows; i++)
 		insert(key[i], value[i]);
 }
 
-void hash_table::insert(int key, int value) {
-	int len = 0;  // find the correct local depth
-	while (bucket_table[tail(key, len)] == nullptr) len++;
+void hash_table::insert(const int key, const int value) {
+	int len = global_depth;  // find the correct local depth
+	while (bucket_table[tail(key, len)] == nullptr) len--;
 
 	hash_entry **ptr = &bucket_table[tail(key, len)]->first;
 	while (*ptr != nullptr) ptr = &(*ptr)->next;  // find the end of the linked list
@@ -36,8 +37,8 @@ void hash_table::insert(int key, int value) {
 		extend(tail(key, len));
 }
 
-void hash_table::extend(int bidx) {
-	int hb = 1 << (31 - __builtin_clz(bidx));  // Highest bit
+void hash_table::extend(const int bidx) {
+	const int hb = 1 << (31 - __builtin_clz(bidx));  // Highest bit
 	global_depth = max(global_depth, ++bucket_table[bidx]->local_depth);
 	bucket_table[bidx + hb*2] = new hash_bucket(bidx, bucket_table[bidx]->local_depth);  // 1xx: new empty bucket
 	bucket_table[bidx + hb] = bucket_table[bidx];  // 0xx: copy the origin bucket
@@ -67,11 +68,12 @@ void hash_table::extend(int bidx) {
 	else if (!bucket_table[bidx + hb*2]->num_entries) extend(bidx + hb);
 }
 
-void hash_table::key_query(vector<int> query_keys, string file_name) {
+void hash_table::key_query(const vector<int> query_keys, const string file_name) {
 	FILE *f = fopen(file_name.c_str(), "w");
+	setvbuf(f, NULL, _IOFBF, 1e7);
 	for (int key : query_keys) {
-		int len = 0;  // find the correct local depth
-		while (bucket_table[tail(key, len)] == nullptr) len++;
+		int len = global_depth;  // find the correct local depth
+		while (bucket_table[tail(key, len)] == nullptr) len--;
 
 		hash_entry *ptr = bucket_table[tail(key, len)]->first;
 		while (ptr != nullptr) {
@@ -84,15 +86,16 @@ void hash_table::key_query(vector<int> query_keys, string file_name) {
 		if (ptr == nullptr)  // not found
 			fprintf(f, "-1,%d\n", len);
 	}
+	fclose(f);
 }
 
-void hash_table::remove_query(vector<int> query_keys) {
-	for (int key : query_keys) remove(key);
+void hash_table::remove_query(const vector<int> query_keys) {
+	for (const int key : query_keys) remove(key);
 }
 
-void hash_table::remove(int key) {
-	int len = 0;  // find the correct local depth
-	while (bucket_table[tail(key, len)] == nullptr) len++;
+void hash_table::remove(const int key) {
+	int len = global_depth;  // find the correct local depth
+	while (bucket_table[tail(key, len)] == nullptr) len--;
 
 	hash_entry *prev, *ptr;
 	prev = bucket_table[tail(key, len)]->first;
@@ -116,8 +119,8 @@ rm_fin:  // common ending for both case
 		shrink(tail(key, len));
 }
 
-void hash_table::shrink(int bidx) {
-	int hb = 1 << (30 - __builtin_clz(bidx));  // Highest bit (new)
+void hash_table::shrink(const int bidx) {
+	const int hb = 1 << (30 - __builtin_clz(bidx));  // Highest bit (new)
 	if (bucket_table[bidx ^ hb] == nullptr) return;  // paired bucket is splitted
 	if (bucket_table[bidx]->num_entries)
 		return (!bucket_table[bidx ^ hb]->num_entries)
