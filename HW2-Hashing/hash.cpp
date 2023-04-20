@@ -1,5 +1,6 @@
 /* Author: Sean Wei */
 #include "hash.h"
+#define IDX (((key)&((1<<(len))-1)) | 1<<(len))
 
 /* Hash Entry */
 hash_entry::hash_entry(const int key, const int value)
@@ -27,14 +28,14 @@ hash_table::hash_table(const int table_size, const int bucket_size, const int nu
 
 void hash_table::insert(const int key, const int value) {
 	int len = global_depth;  // find the correct local depth
-	while (bucket_table[tail(key, len)] == nullptr) len--;
+	while (bucket_table[IDX] == nullptr) len--;
 
-	hash_entry **ptr = &bucket_table[tail(key, len)]->first;
+	hash_entry **ptr = &bucket_table[IDX]->first;
 	while (*ptr != nullptr) ptr = &(*ptr)->next;  // find the end of the linked list
 	*ptr = new hash_entry(key, value);
 
-	if (++bucket_table[tail(key, len)]->num_entries > bucket_size)
-		extend(tail(key, len));
+	if (++bucket_table[IDX]->num_entries > bucket_size)
+		extend(IDX);
 }
 
 void hash_table::extend(const int bidx) {
@@ -73,9 +74,9 @@ void hash_table::key_query(const vector<int> query_keys, const string file_name)
 	setvbuf(f, NULL, _IOFBF, 1e7);
 	for (int key : query_keys) {
 		int len = global_depth;  // find the correct local depth
-		while (bucket_table[tail(key, len)] == nullptr) len--;
+		while (bucket_table[IDX] == nullptr) len--;
 
-		hash_entry *ptr = bucket_table[tail(key, len)]->first;
+		hash_entry *ptr = bucket_table[IDX]->first;
 		while (ptr != nullptr) {
 			if (ptr->key == key) {
 				fprintf(f, "%d,%d\n", ptr->value, len);
@@ -95,14 +96,14 @@ void hash_table::remove_query(const vector<int> query_keys) {
 
 void hash_table::remove(const int key) {
 	int len = global_depth;  // find the correct local depth
-	while (bucket_table[tail(key, len)] == nullptr) len--;
+	while (bucket_table[IDX] == nullptr) len--;
 
 	hash_entry *prev, *ptr;
-	prev = bucket_table[tail(key, len)]->first;
+	prev = bucket_table[IDX]->first;
 	if (prev == nullptr) return;  // empty bucket
 	if (prev->key == key) {  // special case: item is the first one
-		ptr = bucket_table[tail(key, len)]->first;
-		bucket_table[tail(key, len)]->first = ptr->next;
+		ptr = bucket_table[IDX]->first;
+		bucket_table[IDX]->first = ptr->next;
 		goto rm_fin;
 	}
 
@@ -115,8 +116,8 @@ void hash_table::remove(const int key) {
 rm_fin:  // common ending for both case
 	ptr->next = nullptr;
 	delete ptr;
-	if (!--bucket_table[tail(key, len)]->num_entries)
-		shrink(tail(key, len));
+	if (!--bucket_table[IDX]->num_entries)
+		shrink(IDX);
 }
 
 void hash_table::shrink(const int bidx) {

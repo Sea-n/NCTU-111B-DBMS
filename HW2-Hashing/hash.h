@@ -1,7 +1,5 @@
 #include "utils.h"
 
-#define tail(key, len) (((key)&((1<<(len))-1)) | 1<<(len))
-
 class hash_entry {
 public:
 	const int key, value;
