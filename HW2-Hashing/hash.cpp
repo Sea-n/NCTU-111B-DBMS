@@ -1,144 +1,146 @@
 #include "hash.h"
 
+/* Hash Entry */
 hash_entry::hash_entry(int key, int value)
-: key(key)
-, value(value)
-, next(nullptr) {
-	printf("hash_entry(key=%d, value=%d)\n", key, value);
-}
+: key(key), value(value), next(nullptr) { }
 
 hash_entry::~hash_entry() {
-	if (next != nullptr)
-		delete next;
+	if (next != nullptr) delete next;
 }
 
+/* Hash Bucket */
 hash_bucket::hash_bucket(int hash_key, int depth)
-: local_depth(depth)
-, num_entries(0)
-, hash_key(hash_key)
-, first(nullptr) {
-	printf("hash_bucket(hash_key=%d, depth=%d)\n", hash_key, depth);
-}
+: local_depth(depth), num_entries(0), hash_key(hash_key), first(nullptr) { }
 
-/*
- * Free the memory alocated to this->first.
- */
 hash_bucket::~hash_bucket() {
-	if (first != nullptr)
-		delete first;
+	if (first != nullptr) delete first;
 }
 
+/* Hash Table */
 hash_table::hash_table(int table_size, int bucket_size, int num_rows, vector<int> key, vector<int> value)
-: table_size(2)
-, bucket_size(bucket_size)
-, global_depth(1)
-, bucket_table(8192, nullptr) {
-	assert(table_size == 2);
-	bucket_table[2] = new hash_bucket(0, 1);
-	bucket_table[3] = new hash_bucket(1, 1);
+: table_size(table_size), bucket_size(bucket_size), global_depth(1), bucket_table(1e7, nullptr) {
+	bucket_table[1] = new hash_bucket(0, 0);
 	for (int i=0; i<num_rows; i++)
 		insert(key[i], value[i]);
-
-	puts("bucket table summary:");
-	for (int k=0; k<8000; k++)
-		if (bucket_table[k] != nullptr) {
-			printf("    bucket[%d] (depth=%d, key=%d): ", k, bucket_table[k]->local_depth, bucket_table[k]->hash_key);
-			auto ptr = bucket_table[k]->first;
-			while (ptr != nullptr) {
-				printf("%d, ", ptr->key);
-				ptr = ptr->next;
-			}
-			printf("(%d items)\n", bucket_table[k]->num_entries);
-		}
 }
 
-/*
- * When insert collide happened, it needs to do rehash and distribute the entries in the bucket.
- * Furthermore, if the global depth equals to the local depth, you need to extend the table size.
- */
-void hash_table::extend(int bidx) {
-	printf("extend(bidx=%d)\n", bidx);
-	int hb = 1 << (31 - __builtin_clz(bidx));
-	bucket_table[bidx]->local_depth++;
-	bucket_table[bidx + hb*2] = new hash_bucket(bidx + hb, bucket_table[bidx]->local_depth);
-	bucket_table[bidx + hb] = bucket_table[bidx];
-	bucket_table[bidx] = nullptr;
-
-	hash_entry **ptr0, **ptr1, *ptr, *nxt;
-	ptr0 = &bucket_table[bidx + hb]->first;
-	ptr1 = &bucket_table[bidx + hb*2]->first;
-	ptr = *ptr0;
-	while (ptr != nullptr) {
-		if (ptr->key & hb) {
-			*ptr1 = ptr;
-			ptr1 = &(*ptr1)->next;
-		} else {
-			*ptr0 = ptr;
-			ptr0 = &(*ptr0)->next;
-		}
-		nxt = ptr->next;
-		ptr->next = nullptr;
-		ptr = nxt;
-	}
-}
-
-/*
- * When construct hash_table you can call insert() in the for loop for each key-value pair.
- */
 void hash_table::insert(int key, int value) {
-	int len = 0;
+	int len = 0;  // find the correct local depth
 	while (bucket_table[tail(key, len)] == nullptr) len++;
-	printf("insert(key=%d, value=%d): %d\n", key, value, tail(key, len));
 
 	hash_entry **ptr = &bucket_table[tail(key, len)]->first;
-	while (*ptr != nullptr)
-		ptr = &(*ptr)->next;
+	while (*ptr != nullptr) ptr = &(*ptr)->next;  // find the end of the linked list
 	*ptr = new hash_entry(key, value);
 
 	if (++bucket_table[tail(key, len)]->num_entries > bucket_size)
 		extend(tail(key, len));
 }
 
-/*
- * The function might be called when shrink happened.
- * Check whether the table necessory need the current size of table, or half the size of table.
- */
-void hash_table::half_table() {
-	printf("half_table()\n");
-}
+void hash_table::extend(int bidx) {
+	int hb = 1 << (31 - __builtin_clz(bidx));  // Highest bit
+	global_depth = max(global_depth, ++bucket_table[bidx]->local_depth);
+	bucket_table[bidx + hb*2] = new hash_bucket(bidx, bucket_table[bidx]->local_depth);  // 1xx: new empty bucket
+	bucket_table[bidx + hb] = bucket_table[bidx];  // 0xx: copy the origin bucket
+	bucket_table[bidx] = nullptr;  // xx: remove old bucket
 
-/*
- * If a bucket with no entries, it need to check whether the pair hash index bucket 
- * is in the same local depth. If true, then merge the two bucket and reassign all the 
- * related hash index. Or, keep the bucket in the same local depth and wait until the bucket 
- * with pair hash index comes to the same local depth.
- */
-void hash_table::shrink(int bidx) {
-	printf("shrink(bidx=%d)\n", bidx);
-}
+	hash_entry **b0, **b1, *ptr, *nxt;
+	b0 = &bucket_table[bidx + hb]->first;    // linked list of 0xx bucket
+	b1 = &bucket_table[bidx + hb*2]->first;  // linked list of 1xx bucket
+	ptr = *b0;  // all unsorted entries
+	*b0 = nullptr;
+	while (ptr != nullptr) {
+		nxt = ptr->next;  // check next item
+		ptr->next = nullptr;  // for arranged item, make it independent
+		if (ptr->key & hb) {
+			*b1 = ptr;  // move from 0xx to 1xx bucket
+			b1 = &(*b1)->next;
+			bucket_table[bidx + hb]->num_entries--;
+			bucket_table[bidx + hb*2]->num_entries++;
+		} else {
+			*b0 = ptr;
+			b0 = &(*b0)->next;
+		}
+		ptr = nxt;
+	}
 
-/*
- * When executing remove_query you can call remove() in the for loop for each key.
- */
-void hash_table::remove(int key) {
-	printf("remove(key=%d)\n", key);
+	if (!bucket_table[bidx + hb]->num_entries) extend(bidx + hb*2);
+	else if (!bucket_table[bidx + hb*2]->num_entries) extend(bidx + hb);
 }
 
 void hash_table::key_query(vector<int> query_keys, string file_name) {
-	printf("key_query(query_keys=%ld, file_name=%s)\n", query_keys.size(), file_name.c_str());
+	FILE *f = fopen(file_name.c_str(), "w");
+	for (int key : query_keys) {
+		int len = 0;  // find the correct local depth
+		while (bucket_table[tail(key, len)] == nullptr) len++;
+
+		hash_entry *ptr = bucket_table[tail(key, len)]->first;
+		while (ptr != nullptr) {
+			if (ptr->key == key) {
+				fprintf(f, "%d,%d\n", ptr->value, len);
+				break;
+			}
+			ptr = ptr->next;
+		}
+		if (ptr == nullptr)  // not found
+			fprintf(f, "-1,%d\n", len);
+	}
 }
 
 void hash_table::remove_query(vector<int> query_keys) {
-	printf("remove_query(query_keys=%ld)\n", query_keys.size());
+	for (int key : query_keys) remove(key);
 }
 
-/*
- * Free the memory that you have allocated in this program.
- */
+void hash_table::remove(int key) {
+	int len = 0;  // find the correct local depth
+	while (bucket_table[tail(key, len)] == nullptr) len++;
+
+	hash_entry *prev, *ptr;
+	prev = bucket_table[tail(key, len)]->first;
+	if (prev == nullptr) return;  // empty bucket
+	if (prev->key == key) {  // special case: item is the first one
+		ptr = bucket_table[tail(key, len)]->first;
+		bucket_table[tail(key, len)]->first = ptr->next;
+		goto rm_fin;
+	}
+
+	while (prev->next != nullptr && prev->next->key != key) prev = prev->next;
+	if (prev->next == nullptr) return;  // not found
+
+	ptr = prev->next;
+	prev->next = ptr->next;  // concat previous and next entry
+
+rm_fin:  // common ending for both case
+	ptr->next = nullptr;
+	delete ptr;
+	if (!--bucket_table[tail(key, len)]->num_entries)
+		shrink(tail(key, len));
+}
+
+void hash_table::shrink(int bidx) {
+	int hb = 1 << (30 - __builtin_clz(bidx));  // Highest bit (new)
+	if (bucket_table[bidx ^ hb] == nullptr) return;  // paired bucket is splitted
+	if (bucket_table[bidx]->num_entries)
+		return (!bucket_table[bidx ^ hb]->num_entries)
+			? shrink(bidx ^ hb) : (void) 0;
+
+	bucket_table[bidx ^ hb]->local_depth--;
+	bucket_table[bidx ^ hb]->hash_key &= ~hb;
+	bucket_table[hb + (bidx & (hb-1))] = bucket_table[bidx ^ hb];  // move bxx to xx
+	bucket_table[bidx ^ hb] = nullptr;  // bxx: remove old bucket
+	delete bucket_table[bidx];
+	bucket_table[bidx] = nullptr;  // axx: remove empty bucket
+
+	half_table();
+	shrink(hb + ((bidx & (hb-1))));  // try to shrink again
+}
+
+void hash_table::half_table() {
+	for (int k=(1<<global_depth); k<(2<<global_depth); k++)
+		if (bucket_table[k] != nullptr) return;
+	global_depth--;
+}
+
 void hash_table::clear() {
-	printf("hash_table::clear()\n");
 	for (auto bucket : bucket_table)
-		if (bucket != nullptr) {
-			delete bucket;
-		}
+		if (bucket != nullptr) delete bucket;
 }

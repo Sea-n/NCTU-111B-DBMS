@@ -1,6 +1,6 @@
 #include "utils.h"
 
-void read_input_file(int& num_rows, vector<int>& key, vector<int>& value) {
+void read_input_file(int &num_rows, vector<int> &key, vector<int> &value) {
 	// readfile
 	fstream file;
 	file.open("data.txt");
@@ -19,7 +19,7 @@ void read_input_file(int& num_rows, vector<int>& key, vector<int>& value) {
 	cout << "Data file reading complete, " << num_rows << " rows loaded." << endl;
 }
 
-void read_key_query_file(int& num_key_query, vector<int>& query_keys) {
+void read_key_query_file(int &num_key_query, vector<int> &query_keys) {
 	// readfile
 	fstream file;
 	file.open("key_query.txt");
@@ -36,7 +36,7 @@ void read_key_query_file(int& num_key_query, vector<int>& query_keys) {
 	cout << "Key query file reading complete, " << num_key_query << " queries loaded." << endl;
 }
 
-void read_remove_query_file(int& num_remove_query, vector<int>& query_remove_keys) {
+void read_remove_query_file(int &num_remove_query, vector<int> &query_remove_keys) {
 	// readfile
 	fstream file;
 	file.open("remove_key_query.txt");
@@ -76,5 +76,4 @@ void get_memory_usage() {
 	}
 
 	cout << "ram = " << memUsage << " (4KB)" << endl;
- 
 }
