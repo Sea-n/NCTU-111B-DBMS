@@ -2,7 +2,8 @@
 
 class hash_entry {
 public:
-	const int key, value;
+	const int key;
+	int value;
 	hash_entry *next;
 
 	hash_entry(const int key, const int value);
